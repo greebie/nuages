@@ -1,0 +1,21 @@
+import org.warcbase.spark.matchbox._
+import org.warcbase.spark.rdd.RecordRDD._
+import StringUtils._
+
+val text = RecordLoader.loadArchives("/Users/ryandeschamps/nuages/data/*", sc)
+.keepValidPages()
+.map(r => (r.getCrawldate, r.getDomain, r.getUrl, RemoveHTML(r.getContentString)))
+text.saveAsTextFile("~/nuages/data-text")
+
+val r =
+RecordLoader.loadArc("/Users/ryandeschamps/nuages/data/*", sc)
+.keepValidPages()
+.map(r => ExtractTopLevelDomain(r.getUrl))
+.countItems()
+.take(10)
+
+val links = RecordLoader.loadArchives("src/test/resources/warc/example.warc.gz", sc)
+.keepValidPages()
+.flatMap(r => ExtractImageLinks(r.getUrl, r.getContentString))
+.countItems()
+text.saveAsTextFile("/Users/ryandeschamps/nuages/images-Url")
